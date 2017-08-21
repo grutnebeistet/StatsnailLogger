@@ -36,16 +36,16 @@ public class ChooserActivity extends AppCompatActivity
 
         Button grading = (Button) findViewById(R.id.open_grading_button);
         Button weighing = (Button) findViewById(R.id.open_weighing_button);
-        mDrawerLayout =(DrawerLayout)findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView)findViewById(R.id.left_drawer);
+      //  mDrawerLayout =(DrawerLayout)findViewById(R.id.drawer_layout);
+        //mDrawerList = (ListView)findViewById(R.id.left_drawer);
 
         // Set the adapter for the list view
        /* mDrawerList.setAdapter(new ArrayAdapter<>(this,
                 R.layout.drawer_list_item, "LogoutTest"));*/
         // Set the list's click listener
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,R.string.drawer_open,R.string.drawer_close){
+      //  mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,R.string.drawer_open,R.string.drawer_close){
 
-        };
+        //};
 
         handleLocationPermission();
 
