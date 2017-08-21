@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.roberts.adrian.statsnaillogger">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_logo2"
+        android:label="Statsnail Catch Log"
+        android:theme="@style/AppTheme">
+        <provider
+            android:name=".data.LogContentProvider"
+            android:authorities="@string/content_authority"
+            android:exported="false" />
+        <activity
+            android:name=".activities.MainActivity"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustPan"
+            android:noHistory="true"
+            android:label="Statsnail Catch Log" />
+        <activity
+            android:name=".activities.SignInActivity"
+            android:label="Statsnail Login">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activities.ChooserActivity"
+            android:label="@string/title_activity_chooser"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+    </application>
+
+</manifest>

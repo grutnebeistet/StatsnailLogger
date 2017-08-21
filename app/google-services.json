@@ -1,0 +1,51 @@
+{
+  "project_info": {
+    "project_number": "1062394364995",
+    "project_id": "statsnaillogger"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1062394364995:android:22c5cc2e415550ae",
+        "android_client_info": {
+          "package_name": "com.roberts.adrian.statsnaillogger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1062394364995-lpmst9l467prk6o2deegphjj11slpc3o.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "1062394364995-9bvkp83msnfgnpqilprju6dft8sluvoa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roberts.adrian.statsnaillogger",
+            "certificate_hash": "be4646f91333c17583db5c9ccc1220536117c0f2"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGLM19tH8Fy_eK90u0GMcVtiHr5GOYZkk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-105000887-1"
+          }
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
