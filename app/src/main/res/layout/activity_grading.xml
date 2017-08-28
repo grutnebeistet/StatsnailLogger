@@ -201,10 +201,9 @@
                 android:layout_weight="1">
 
                 <TextView
-                    android:id="@+id/satan"
+                    android:id="@+id/tv_label_graded_by"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-
                     android:text="Graded by" />
             </RelativeLayout>
         </LinearLayout>

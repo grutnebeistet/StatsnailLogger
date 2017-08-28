@@ -65,21 +65,6 @@ public class SignInActivity extends AppCompatActivity implements
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
-
-
-/*        // start mainactivty if user is signed-in
-        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-            // signed in.
-            Log.i(TAG, "starting main cos googleapi is connected"); // TODO skjer ikke
-            Intent main = new Intent(this, MainActivity.class);
-
-            startActivity(main); // TODO her vil vel googleaccount mangle?
-
-       *//*     Intent chooserActivity = new Intent(this, ChooserActivity.class);
-            startActivity(main)*//*;
-
-        }*/
-
         // [END build_client]
 
         // [START customize_button]

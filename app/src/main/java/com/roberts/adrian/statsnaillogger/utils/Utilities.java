@@ -77,7 +77,7 @@ public class Utilities {
 
 
     }
-
+   //TODO egen readsheet, egen DBshit
     @AfterPermissionGranted(REQUEST_AUTHORIZATION)
     public static ValueRange readShit(Activity context, com.google.api.services.sheets.v4.Sheets service) {
         Log.i(TAG, "readshit");
@@ -90,10 +90,8 @@ public class Utilities {
             result = service.spreadsheets().values().get(spreadsheetId, range).execute();
 
             int numRows = result.getValues() != null ? result.getValues().size() - 1 : 0;  // +1 because first row consists of labels
-            //   Log.i(TAG, "numRows from read: " + numRows);
-            result.getValues();
-            // Log.i(TAG, "values:\n" + result.getValues());
 
+          //  result.getValues();
 
             Cursor cursor;
             SqlDbHelper dbHelper = new SqlDbHelper(context);
@@ -111,7 +109,7 @@ public class Utilities {
             }
 
 
-            List<List<Object>> logs = result.getValues(); // TODO flytte dette / kun lagre nye innføringer
+            List<List<Object>> logs = result.getValues(); // TODO flytte DB stuff til egen metode/ kun lagre nye innføringer?
             if (!result.isEmpty() && numRows >= 1) {
                 for (int i = 1; i < logs.size(); i++) {
                     List<Object> lb = logs.get(i);
@@ -146,38 +144,6 @@ public class Utilities {
             e.printStackTrace();
         }
         return result;
-    }
-
-    public static class readSheet extends AsyncTask<com.google.api.services.sheets.v4.Sheets, Void, ValueRange> {
-        com.google.api.services.sheets.v4.Sheets mService;
-        String spreadsheetId;
-        String range;
-
-        public readSheet(Context context) {
-            //mService = service;
-            spreadsheetId = context.getString(R.string.spreadsheet_id);
-            range = context.getString(R.string.spreadsheet_read_range);
-        }
-
-        @Override
-        protected void onPostExecute(ValueRange valueRange) {
-            super.onPostExecute(valueRange);
-        }
-
-        @Override
-        protected ValueRange doInBackground(Sheets... params) {
-            ValueRange result = null;
-            try {
-                result = mService.spreadsheets().values().get(spreadsheetId, range).execute();
-                int numRows = result.getValues() != null ? result.getValues().size() : 0;  // +1 because first row consists of labels
-                result.getValues();
-                Log.i(TAG, "values:\n" + result.getValues());
-                Log.i(TAG, "numRows:\n" + numRows);
-            } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
-            }
-            return result;
-        }
     }
 
 }

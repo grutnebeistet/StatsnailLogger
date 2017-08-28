@@ -91,11 +91,10 @@ public class MainActivity extends AppCompatActivity
     RecyclerView recyclerView;
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
-   public static final int REQUEST_AUTHORIZATION = 1001;
+    public static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
     static final int REQUEST_PERMISSION_ACCESS_FINE_LOCATION = 1004;
-
 
 
     private static final String PREF_ACCOUNT_NAME = "accountName";
@@ -110,9 +109,6 @@ public class MainActivity extends AppCompatActivity
 
     private ValueRange mExistingRows;
 
-    private Context mContext;
-
-    private Utilities.readSheet mReadSheet;
 
     private static final String[] PROJECTION = {
             COLUMN_HARVEST_ID,
@@ -125,6 +121,7 @@ public class MainActivity extends AppCompatActivity
     public static final int INDEX_HARVEST_USER = 2;
     public static final int INDEX_HARVEST_GRADED = 3;
 
+    private static final int HARVEST_LOG_LOADER_ID = 1349;
     /**
      * Create the main activity.
      *
@@ -134,40 +131,22 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // TESTING
-        // we want to see what "this" is in a thread dump TODO denne testen http://www.twisterrob.net/blog/2015/04/android-full-thread-dump.html
-  /*      synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }*/
-
         mSharedPreferences = this.getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
 
         mWeighingMode = mSharedPreferences.getBoolean(getString(R.string.logging_mode_weighing), false);
         mGradingMode = mSharedPreferences.getBoolean(getString(R.string.logging_mode_grading), false);
 
-        mContext = this;
 
         // Start retrieving last known location
         if (EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION))
             Utilities.retrieveLastLocation(this);
 
 
-        //Start process of getting last known location
-        //if () // TODO kjøres metoden når inni if?
-        //Utilities.retrieveLastLocation(this);
-        // handleLocationPermission();
-
         if (mWeighingMode) setupWeighingUi();
         else if (mGradingMode) setupGradingUi();
 
-        // google account sent from login/launchActivity
+        // google account sent from SignInActivity/launchActivity
         mGoogleAccount = (GoogleSignInAccount) getIntent().getExtras().get("GoogleSignInAccount");
-
-      //  String exchangeCode = GoogleAuthUtil.getToken(this, mGoogleAccount.getAccount().name, ""); //TODO testing
 
         mCredential = GoogleAccountCredential.usingOAuth2(getApplicationContext(),
                 Arrays.asList(SCOPES)).setBackOff(new ExponentialBackOff())
@@ -177,7 +156,7 @@ public class MainActivity extends AppCompatActivity
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
         mService = new com.google.api.services.sheets.v4.Sheets.Builder(
                 transport, jsonFactory, mCredential)
-                .setApplicationName("Statsnail Catch Logger") // TODO R.string. Blir mService fåkka her siden mCred ikke er klar?
+                .setApplicationName("Statsnail Catch Logger") // TODO R.string.
                 .build();
 
 
@@ -185,14 +164,6 @@ public class MainActivity extends AppCompatActivity
 
 
         Log.i(TAG, "name: " + mCredential.getSelectedAccountName());
-
-        /**
-         * Test
-         */
- /*       mCredentiall = new GoogleCredential.Builder().setTransport(new NetHttpTransport())
-                .setJsonFactory(JacksonFactory.getDefaultInstance())
-                .build();
-        mCredentiall.setAccessToken(mGoogleAccount.getIdToken());*/
 
 
         mFab = (FloatingActionButton)
@@ -274,7 +245,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         if (mGradingMode) {
-            getSupportLoaderManager().initLoader(0, null, this);
+            getSupportLoaderManager().initLoader(HARVEST_LOG_LOADER_ID, null, this);
         }
     }
 
@@ -404,34 +375,14 @@ public class MainActivity extends AppCompatActivity
         if (!isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
         } else if (mCredential.getSelectedAccountName() == null) {
-            // chooseAccount();
-            //TODO check mCred.name
             Log.i(TAG, "name i getResultFrom: " + mCredential.getSelectedAccountName());
             mCredential.setSelectedAccountName(mGoogleAccount.getAccount().name);
             Log.i(TAG, "name i getResultFrom: " + mCredential.getSelectedAccountName());
 
-            // Initialize credentials and service object.
-           /* HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new com.google.api.services.sheets.v4.Sheets.Builder(
-                    transport, jsonFactory, mCredential)
-                    .setApplicationName("Statsnail Catch Logger") // TODO R.string. Blir mService fåkka her siden mCred ikke er klar?
-                    .build();*/
-            //   mService.setAuthSubToken(mCredential.getToken());
             Log.i(TAG, "mService etter init i getResFromAp : " + (mService == null));
         } else if (!isDeviceOnline()) { // TODO toast i thread? kanskje ikke i thread nu
             Toast.makeText(this, "NO INTERNET CONNECTION mvh Satan", Toast.LENGTH_SHORT).show();
-        } /*else { //when contact permission granted  // TODO messy to put here - denne koden i contactPerm nu
-            Thread readSheet = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    mExistingRows = Utilities.readShit(mContext, mService);
-                }
-            });
-            readSheet.start();
-        }*/
-        //else if (mExistingRows == null) mExistingRows = Utilities.readShit(this, mService);
-
+        }
     }
 
     private void postGradingData() {
@@ -443,7 +394,6 @@ public class MainActivity extends AppCompatActivity
         Object spinnerHarvestNo = mSpinnerHarvestNo.getSelectedItem();
 
         int selectedHarvestNo = (Integer) mSpinnerHarvestNo.getSelectedItem();
-        //Integer.valueOf(mEditTextHarvestNo.getText().toString());
 
         if (mExistingRows == null || mExistingRows.getValues() == null) {
             //TODO bare finish her? for å unngå overwriting
@@ -469,8 +419,6 @@ public class MainActivity extends AppCompatActivity
         List<List<Object>> values = new ArrayList<>();
 
         List<Object> gradingData = new ArrayList<>();
-
-        String location = Utilities.getLocationUrl();
 
         // TODO update DB
 
@@ -524,7 +472,6 @@ public class MainActivity extends AppCompatActivity
         int harvestNum;
         Log.i(TAG, "mExistingRows.getValues == null " + (mExistingRows == null));
         if (mExistingRows == null || mExistingRows.getValues() == null) {
-            harvestNum = 0;
             toastFromThread("Failed to read the spreadsheet");
             finish();
             return;
@@ -558,7 +505,6 @@ public class MainActivity extends AppCompatActivity
         valueRange.setRange(range);
         valueRange.setValues(values);
 
-        // TODO avslutte activity og toaste om service baller seg
         String toastMessage;
         Log.i(TAG, "mService Null? " + (mService == null));
         if (mService == null) {
@@ -574,7 +520,6 @@ public class MainActivity extends AppCompatActivity
                     .append(spreadsheetId, range, valueRange)
                     .setValueInputOption("USER_ENTERED")
                     .execute();
-            Log.i("Executed spreadsheet", "hehhe");
         } catch (NullPointerException | IOException e) {
             Log.i(TAG, e.getMessage());
             toastMessage = "Failed to register catch!";
