@@ -1,11 +1,13 @@
 package com.roberts.adrian.statsnaillogger.utils;
 
 import android.app.Activity;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -25,11 +27,13 @@ import java.util.List;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 
+import static android.provider.CalendarContract.CalendarCache.URI;
 import static com.roberts.adrian.statsnaillogger.activities.MainActivity.REQUEST_AUTHORIZATION;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_DATE;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_GRADED;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_ID;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_USER;
+import static com.roberts.adrian.statsnaillogger.data.LogContract.CONTENT_LOG_ITEM_TYPE;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.CONTENT_URI_HARVEST_LOG;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.TABLE_LOGS;
 
@@ -77,7 +81,8 @@ public class Utilities {
 
 
     }
-   //TODO egen readsheet, egen DBshit
+
+    //TODO egen readsheet, egen DBshit
     @AfterPermissionGranted(REQUEST_AUTHORIZATION)
     public static ValueRange readShit(Activity context, com.google.api.services.sheets.v4.Sheets service) {
         Log.i(TAG, "readshit");
@@ -88,55 +93,9 @@ public class Utilities {
         try {
             Log.i(TAG, "service: " + service.toString());
             result = service.spreadsheets().values().get(spreadsheetId, range).execute();
+            updateDb(context,result);
 
-            int numRows = result.getValues() != null ? result.getValues().size() - 1 : 0;  // +1 because first row consists of labels
-
-          //  result.getValues();
-
-            Cursor cursor;
-            SqlDbHelper dbHelper = new SqlDbHelper(context);
-            SQLiteDatabase db = dbHelper.getReadableDatabase();
-            SQLiteDatabase dbw = dbHelper.getWritableDatabase();
-
-            cursor = db.query(LogContract.TABLE_LOGS, null, null, null, null, null, null);
-            // Log.i(TAG, "Cursor Count : " + cursor.getCount());
-
-            if (cursor.getCount() > 0) {
-                //db.delete(LogContract.TABLE_LOGS, null, null); // TODO bedre enn dette -nå slettes hver gang
-                Log.i(TAG, "cursor > 0 - delete Table");
-                dbw.delete(TABLE_LOGS, null, null);
-                cursor.close();
-            }
-
-
-            List<List<Object>> logs = result.getValues(); // TODO flytte DB stuff til egen metode/ kun lagre nye innføringer?
-            if (!result.isEmpty() && numRows >= 1) {
-                for (int i = 1; i < logs.size(); i++) {
-                    List<Object> lb = logs.get(i);
-                    String harvestNo = lb.get(0).toString();
-                    String date = lb.get(1).toString();
-                    String name = lb.get(5).toString();
-                    String name_grader = lb.size() > 6 ? lb.get(10).toString() : null;
-
-
-                    ContentValues values = new ContentValues();
-                    values.put(COLUMN_HARVEST_ID, Integer.valueOf(harvestNo));
-                    values.put(COLUMN_HARVEST_DATE, date);
-                    values.put(COLUMN_HARVEST_USER, name);
-                    if (lb.size() > 6) {
-                        // Log.i(TAG, "Been graded " + harvestNo);
-                        values.put(COLUMN_HARVEST_GRADED, name_grader);
-                    } else {
-                        // values.put(COLUMN_HARVEST_GRADED, null);
-                        // Log.i(TAG, "Not graded " + harvestNo);
-                    }
-
-                    context.getContentResolver().insert(CONTENT_URI_HARVEST_LOG, values);
-                    //   Log.i(TAG, "lb: " + lb + " lb.size: " +lb.size() + "\nHarvNo " + harvestNo + " dato: " + date + " name: " + name);
-                }
-            }
-        } catch (UserRecoverableAuthIOException userRecoverableException)
-        {
+        } catch (UserRecoverableAuthIOException userRecoverableException) {
             context.startActivityForResult(
                     userRecoverableException.getIntent(), REQUEST_AUTHORIZATION); // Requests permission again (why not work before?)
             Log.e(TAG, "cause: " + userRecoverableException.getCause());
@@ -146,4 +105,63 @@ public class Utilities {
         return result;
     }
 
+    public static void updateDbSingle(Context context, ValueRange newValue, int rowNum){
+
+        ContentValues values = new ContentValues();
+
+        String name_grader = newValue.getValues().get(0).get(4).toString();
+        values.put(COLUMN_HARVEST_GRADED, name_grader);
+
+        Uri logUri = ContentUris.withAppendedId(CONTENT_URI_HARVEST_LOG,rowNum);
+        Log.i(TAG, "values: " + name_grader);
+        context.getContentResolver().update(logUri,values,null,null);
+        context.getContentResolver().notifyChange(logUri, null);
+
+    }
+    public static void updateDb(Context context, ValueRange result) {
+        int numRows = result.getValues() != null ? result.getValues().size() - 1 : 0;  // +1 because first row consists of labels
+
+        Cursor cursor;
+        SqlDbHelper dbHelper = new SqlDbHelper(context);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        SQLiteDatabase dbw = dbHelper.getWritableDatabase();
+
+        cursor = db.query(LogContract.TABLE_LOGS, null, null, null, null, null, null);
+        // Log.i(TAG, "Cursor Count : " + cursor.getCount());
+
+        if (cursor.getCount() > 0) {
+            //db.delete(LogContract.TABLE_LOGS, null, null); // TODO bedre enn dette -nå slettes hver gang
+            Log.i(TAG, "cursor > 0 - delete Table");
+            dbw.delete(TABLE_LOGS, null, null);
+            cursor.close();
+        }
+
+
+        List<List<Object>> logs = result.getValues(); // TODO flytte DB stuff til egen metode/ kun lagre nye innføringer?
+        if (!result.isEmpty() && numRows >= 1) {
+            for (int i = 1; i < logs.size(); i++) {
+                List<Object> lb = logs.get(i);
+                String harvestNo = lb.get(0).toString();
+                String date = lb.get(1).toString();
+                String name = lb.get(5).toString();
+                String name_grader = lb.size() > 6 ? lb.get(10).toString() : null;
+
+
+                ContentValues values = new ContentValues();
+                values.put(COLUMN_HARVEST_ID, Integer.valueOf(harvestNo));
+                values.put(COLUMN_HARVEST_DATE, date);
+                values.put(COLUMN_HARVEST_USER, name);
+                if (lb.size() > 6) {
+                    // Log.i(TAG, "Been graded " + harvestNo);
+                    values.put(COLUMN_HARVEST_GRADED, name_grader);
+                } else {
+                    // values.put(COLUMN_HARVEST_GRADED, null);
+                    // Log.i(TAG, "Not graded " + harvestNo);
+                } // TODO bulkinsert
+
+                context.getContentResolver().insert(CONTENT_URI_HARVEST_LOG, values);
+                //   Log.i(TAG, "lb: " + lb + " lb.size: " +lb.size() + "\nHarvNo " + harvestNo + " dato: " + date + " name: " + name);
+            }
+        }
+    }
 }

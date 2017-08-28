@@ -1,5 +1,6 @@
 package com.roberts.adrian.statsnaillogger.data;
 
+import android.content.ContentResolver;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
@@ -13,6 +14,19 @@ public class LogContract implements BaseColumns {
     public static final String PATH_LOG = "harvest_log";
 
     public static final Uri CONTENT_URI_HARVEST_LOG = BASE_CONTENT_URI.buildUpon().appendPath(PATH_LOG).build();
+    /**
+     * The MIME type of the {@link #CONTENT_URI_HARVEST_LOG} for a list of movies.
+     */
+    public static final String CONTENT_LOG_LIST_TYPE =
+            ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOG;
+
+    /**
+     * The MIME type of the {@link #CONTENT_URI_HARVEST_LOG} for a single movie.
+     */
+    public static final String CONTENT_LOG_ITEM_TYPE =
+            ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOG;
+
+
 
     public static final String TABLE_LOGS = "harvest_logs";
 

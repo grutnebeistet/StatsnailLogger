@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_ID;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.TABLE_LOGS;
 
 /**
@@ -23,7 +24,15 @@ public class LogContentProvider extends ContentProvider {
     static final int HARVEST_LOG = 100;
     static final int HARVEST_LOG_ID = 101;
 
-    private static final UriMatcher sUriMatcher = buildUriMatcher();
+    private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+    static {
+
+        sUriMatcher.addURI(LogContract.CONTENT_AUTHORITY, LogContract.PATH_LOG, HARVEST_LOG);
+
+        sUriMatcher.addURI(LogContract.CONTENT_AUTHORITY, LogContract.PATH_LOG + "/#", HARVEST_LOG_ID);
+    }
+/*    private static final UriMatcher sUriMatcher = buildUriMatcher();
 
     static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -32,7 +41,7 @@ public class LogContentProvider extends ContentProvider {
         matcher.addURI(authority, LogContract.PATH_LOG, HARVEST_LOG_ID);
 
         return matcher;
-    }
+    }*/
 
     @Override
     public boolean onCreate() {
@@ -78,7 +87,7 @@ public class LogContentProvider extends ContentProvider {
     @Override
     public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        final int match = buildUriMatcher().match(uri);
+        final int match = sUriMatcher.match(uri);
         switch (match) {
             case HARVEST_LOG:
                 db.beginTransaction();
@@ -107,7 +116,7 @@ public class LogContentProvider extends ContentProvider {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         long newRowId;
         newRowId = db.insert(TABLE_LOGS, null, values);
-        //Log.i(TAG, "inserted : " + values.get(COLUMN_HARVEST_USER));
+        Log.i(TAG, "inserted : " + values.get(COLUMN_HARVEST_ID));
         if (newRowId == -1) {
             Log.e(TAG, "insertion failed for " + uri);
             return null;
@@ -123,8 +132,22 @@ public class LogContentProvider extends ContentProvider {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         int rowsUpdated;
 
-        //rowsUpdated = db.up
-        return 0;
+        switch (sUriMatcher.match(uri)) {
+            case HARVEST_LOG_ID:
+                selection = COLUMN_HARVEST_ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                rowsUpdated = db.update(TABLE_LOGS, values, selection, selectionArgs);
+                break;
+            case HARVEST_LOG:
+                rowsUpdated = db.update(TABLE_LOGS, values, selection, selectionArgs);
+                break;
+            default:
+                throw new IllegalArgumentException("Cannot update for given uri " + uri);
+        }
+
+
+        Log.i(TAG, "updated row " + String.valueOf(ContentUris.parseId(uri)));
+        return rowsUpdated;
     }
 
     @Nullable

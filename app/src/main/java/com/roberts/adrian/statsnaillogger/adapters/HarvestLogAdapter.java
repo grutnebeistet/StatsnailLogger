@@ -58,7 +58,7 @@ public class HarvestLogAdapter extends RecyclerView.Adapter<HarvestLogAdapter.Lo
             holder.tvLogGradedBy.setText(graded);
             holder.tvLogGradedBy.setTextColor(Color.RED);
         }
-        holder.tvLogItemNo.setText(""+harvestID);
+        holder.tvLogItemNo.setText(""+harvestID); // TODO res string w/placeholder
         holder.tvLogDate.setText(gradedDate);
         Log.i(TAG, "adapter, name: " + name);
 

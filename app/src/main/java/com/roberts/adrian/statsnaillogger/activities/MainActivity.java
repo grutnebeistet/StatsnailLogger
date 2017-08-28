@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity
     public static final int INDEX_HARVEST_GRADED = 3;
 
     private static final int HARVEST_LOG_LOADER_ID = 1349;
+
     /**
      * Create the main activity.
      *
@@ -270,7 +271,7 @@ public class MainActivity extends AppCompatActivity
                 }
             });
             readSheet.start();
-            // TODO teori: noe med mService
+
             if (mService != null) {
                 //readSheet.start();
             } else
@@ -458,6 +459,13 @@ public class MainActivity extends AppCompatActivity
         }
 //        getSupportLoaderManager().restartLoader(0,null,this);
         showSummaryDialog();
+        Log.i(TAG, "new value 0: " + values.get(0)+"\n"+mExistingRows.getValues().get(selectedHarvestNo));
+        mExistingRows.getValues().add(selectedHarvestNo,values.get(0));
+        Log.i(TAG, "new value 0: " + values.get(0)+"\n"+mExistingRows.getValues().get(selectedHarvestNo));
+        Utilities.updateDbSingle(this,valueRange,selectedHarvestNo);
+       /* mExistingRows.getValues().add(selectedHarvestNo,values.get(0));
+        Utilities.updateDb(this,mExistingRows);*/
+        //Utilities.updateDb(this, mExistingRows.setValues(values));  // TODO only update the db with new values instead
         toastMessage = "Harvest number " + "<Todo>" + " graded";
         toastFromThread(toastMessage);
         finish();
@@ -528,9 +536,12 @@ public class MainActivity extends AppCompatActivity
             return;
 
         }
-
+        //  Utilities.updateDb(this, mExistingRows);
         showSummaryDialog(); // TODO?
-//
+        // updating the db immediately in order for the log to get updated (clumsy)
+        mExistingRows.getValues().add(harvestNum,values.get(0));
+        Utilities.updateDb(this,mExistingRows);
+       // Utilities.updateDbSingle(this,valueRange, mExistingRows.getValues().size());
         // TODO lese spreadsheet igjen for å sjekke at faktisk oppdatert??
         toastMessage = "Harvest number " + harvestNum + " added";
         toastFromThread(toastMessage);
@@ -545,6 +556,7 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    // TODO occasional wrong format - due to threadsafe?
     private String getDate() {
         java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         Date date = new Date(System.currentTimeMillis());
