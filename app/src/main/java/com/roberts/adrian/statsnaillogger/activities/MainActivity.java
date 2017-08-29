@@ -56,7 +56,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_DATE;
@@ -93,8 +92,7 @@ public class MainActivity extends AppCompatActivity
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     public static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-    static final int REQUEST_PERMISSION_ACCESS_FINE_LOCATION = 1004;
+
 
 
     private static final String PREF_ACCOUNT_NAME = "accountName";
@@ -142,7 +140,6 @@ public class MainActivity extends AppCompatActivity
         if (EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION))
             Utilities.retrieveLastLocation(this);
 
-
         if (mWeighingMode) setupWeighingUi();
         else if (mGradingMode) setupGradingUi();
 
@@ -161,7 +158,15 @@ public class MainActivity extends AppCompatActivity
                 .build();
 
 
-        getContactPermission();
+        //getContactPermission();
+        getResultsFromApi();
+        Thread readSheet = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mExistingRows = Utilities.readShit(MainActivity.this, mService);
+            }
+        });
+        readSheet.start();
 
 
         Log.i(TAG, "name: " + mCredential.getSelectedAccountName());
@@ -250,35 +255,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
-    private void getContactPermission() {
-
-        Log.i(TAG, "getContactPerm");
-        if (!EasyPermissions.hasPermissions(this,
-                Manifest.permission.GET_ACCOUNTS)) {
-            Log.i(TAG, "getContactPerm - requestPerm");
-            EasyPermissions.requestPermissions(this,
-                    "need contact perm",
-                    REQUEST_PERMISSION_GET_ACCOUNTS,
-                    Manifest.permission.GET_ACCOUNTS);
-        } else {
-            Log.i(TAG, "getContactPerm - Granted");
-            getResultsFromApi();
-            Thread readSheet = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    mExistingRows = Utilities.readShit(MainActivity.this, mService);
-                }
-            });
-            readSheet.start();
-
-            if (mService != null) {
-                //readSheet.start();
-            } else
-                Log.i(TAG, "mService == null i getContactPermi"); // TODO disable knapp og error beskjed
-
-        }
-    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -459,14 +435,14 @@ public class MainActivity extends AppCompatActivity
         }
 //        getSupportLoaderManager().restartLoader(0,null,this);
         showSummaryDialog();
-        Log.i(TAG, "new value 0: " + values.get(0)+"\n"+mExistingRows.getValues().get(selectedHarvestNo));
-        mExistingRows.getValues().add(selectedHarvestNo,values.get(0));
-        Log.i(TAG, "new value 0: " + values.get(0)+"\n"+mExistingRows.getValues().get(selectedHarvestNo));
-        Utilities.updateDbSingle(this,valueRange,selectedHarvestNo);
+        Log.i(TAG, "new value 0: " + values.get(0) + "\n" + mExistingRows.getValues().get(selectedHarvestNo));
+        mExistingRows.getValues().add(selectedHarvestNo, values.get(0));
+        Log.i(TAG, "new value 0: " + values.get(0) + "\n" + mExistingRows.getValues().get(selectedHarvestNo));
+        Utilities.updateDbSingle(this, valueRange, selectedHarvestNo);
        /* mExistingRows.getValues().add(selectedHarvestNo,values.get(0));
         Utilities.updateDb(this,mExistingRows);*/
         //Utilities.updateDb(this, mExistingRows.setValues(values));  // TODO only update the db with new values instead
-        toastMessage = "Harvest number " + "<Todo>" + " graded";
+        toastMessage = "Harvest number " + selectedHarvestNo + " graded";
         toastFromThread(toastMessage);
         finish();
     }
@@ -539,9 +515,9 @@ public class MainActivity extends AppCompatActivity
         //  Utilities.updateDb(this, mExistingRows);
         showSummaryDialog(); // TODO?
         // updating the db immediately in order for the log to get updated (clumsy)
-        mExistingRows.getValues().add(harvestNum,values.get(0));
-        Utilities.updateDb(this,mExistingRows);
-       // Utilities.updateDbSingle(this,valueRange, mExistingRows.getValues().size());
+        mExistingRows.getValues().add(harvestNum, values.get(0));
+        Utilities.updateDb(this, mExistingRows);
+        // Utilities.updateDbSingle(this,valueRange, mExistingRows.getValues().size());
         // TODO lese spreadsheet igjen for å sjekke at faktisk oppdatert??
         toastMessage = "Harvest number " + harvestNum + " added";
         toastFromThread(toastMessage);

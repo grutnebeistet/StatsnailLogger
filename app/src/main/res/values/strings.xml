@@ -31,7 +31,7 @@
     <string name="spreadsheet_id">1zx1lZfMgQ3z_Ip-6QEnSK0W9YkrRoBI0xmYktvxDrvA</string>
     <string name="spreadsheet_read_range">sheet4</string>
 
-
+    <string name="returned_from_app_settings_to_activity">Returned from app settings to ChooserActivity</string>
 
 
     <string name="drawer_open">Open navigation drawer</string>
