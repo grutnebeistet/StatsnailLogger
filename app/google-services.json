@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "1062394364995",
-    "project_id": "statsnaillogger"
+    "firebase_url": "https://statsnaillogger.firebaseio.com",
+    "project_id": "statsnaillogger",
+    "storage_bucket": "statsnaillogger.appspot.com"
   },
   "client": [
     {
@@ -12,6 +14,18 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "1062394364995-lu3uoh14p33gioqi6asl8pc46nbqprme.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "1062394364995-gccvfcqfe756ockrnne7v7venor433p5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roberts.adrian.statsnaillogger",
+            "certificate_hash": "85c9b9393c043e16c8811f388dabe533f98b1dda"
+          }
+        },
         {
           "client_id": "1062394364995-lpmst9l467prk6o2deegphjj11slpc3o.apps.googleusercontent.com",
           "client_type": 3
@@ -38,11 +52,16 @@
           }
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1062394364995-lu3uoh14p33gioqi6asl8pc46nbqprme.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }

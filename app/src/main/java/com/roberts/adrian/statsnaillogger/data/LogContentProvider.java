@@ -103,11 +103,13 @@ public class LogContentProvider extends ContentProvider {
                 } finally {
                     db.endTransaction();
                 }
+                Log.i(TAG, "bulked - notifying, returning count: " + returnCount);
                 getContext().getContentResolver().notifyChange(uri, null);
                 return returnCount;
             default:
                 return super.bulkInsert(uri, values);
         }
+
     }
 
     @Nullable
@@ -121,6 +123,7 @@ public class LogContentProvider extends ContentProvider {
             Log.e(TAG, "insertion failed for " + uri);
             return null;
         }
+        getContext().getContentResolver().notifyChange(uri, null);
         // Return Uri for newly added data
         return ContentUris.withAppendedId(uri, newRowId);
     }

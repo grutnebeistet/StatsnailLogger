@@ -47,28 +47,49 @@ public class ChooserActivity extends AppCompatActivity
         mGrading = (Button) findViewById(R.id.open_grading_button);
         mWeighing = (Button) findViewById(R.id.open_weighing_button);
 
-        handleLocationPermission();
+        getContactPermission();
 
 
         mGrading.setOnClickListener(this);
         mWeighing.setOnClickListener(this);
-        mGrading.setEnabled(false);
-        mWeighing.setEnabled(false);
+/*        mGrading.setEnabled(false);
+        mWeighing.setEnabled(false);*/
 
         mInfo = getIntent().getExtras();
 
         mSharedPreferences = this.getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-
+        Log.i(TAG, "oncreate");
     }
 
     @Override
     public void onPermissionsGranted(int requestCode, List<String> perms) {
-
+        switch (requestCode) {
+            case REQUEST_PERMISSION_ACCESS_FINE_LOCATION:
+                break;
+            case REQUEST_PERMISSION_GET_ACCOUNTS:
+                mWeighing.setEnabled(true);
+                mGrading.setEnabled(true);
+                break;
+        }
     }
 
     @Override
     public void onPermissionsDenied(int requestCode, List<String> perms) {
         Log.d(TAG, "onPermissionsDenied:" + requestCode + ":" + perms.size());
+        String toastMsg = "";
+        switch (requestCode) {
+            case REQUEST_PERMISSION_ACCESS_FINE_LOCATION:
+                toastMsg = "Harvest location will be blank";
+                break;
+            case REQUEST_PERMISSION_GET_ACCOUNTS:
+                toastMsg = "Contact permissions required!";
+                mWeighing.setEnabled(false);
+                mGrading.setEnabled(false);
+                // request contact permissions again
+                getContactPermission();
+                break;
+        }
+        Toast.makeText(this, toastMsg, Toast.LENGTH_SHORT).show();
 
         // (Optional) Check whether the user denied any permissions and checked "NEVER ASK AGAIN."
         // This will display a dialog directing them to enable the permission in app settings.
@@ -96,18 +117,16 @@ public class ChooserActivity extends AppCompatActivity
         }
     }
 
-    @AfterPermissionGranted(REQUEST_PERMISSION_ACCESS_FINE_LOCATION)
+
     public void handleLocationPermission() {
         Log.i(TAG, "handleLocPerm");
-        if (EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+        if (!EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
 
-            getContactPermission();
-
-        } else {
             EasyPermissions.requestPermissions(this,
                     "turn on location forr faen",
                     REQUEST_PERMISSION_ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION);
+
         }
     }
 
@@ -116,19 +135,15 @@ public class ChooserActivity extends AppCompatActivity
     public void getContactPermission() {
 
         Log.i(TAG, "getContactPerm");
-        if (EasyPermissions.hasPermissions(this,
+        if (!EasyPermissions.hasPermissions(this,
                 Manifest.permission.GET_ACCOUNTS)) {
-            mGrading.setEnabled(true);
-            mWeighing.setEnabled(true);
-
-
-        } else {
-            Log.i(TAG, "getContactPerm - requestPerm");
             EasyPermissions.requestPermissions(this,
-                    "need contact perm",
+                    "Contact permissions are required to communicate with Statsnail's spreadsheet",
                     REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
-        }
+
+
+        } else handleLocationPermission();
     }
 
     @Override

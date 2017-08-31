@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -20,6 +21,7 @@ import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.roberts.adrian.statsnaillogger.R;
+import com.roberts.adrian.statsnaillogger.utils.Utilities;
 
 
 /**
@@ -90,13 +92,17 @@ public class SignInActivity extends AppCompatActivity implements
             // this asynchronous branch will attempt to sign in the user silently.  Cross-device
             // single sign-on will occur in this branch.
             showProgressDialog();
-            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-                @Override
-                public void onResult(GoogleSignInResult googleSignInResult) {
-                    hideProgressDialog();
-                    handleSignInResult(googleSignInResult);
-                }
-            });
+            if (Utilities.workingConnection(this)) {
+                opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+                    @Override
+                    public void onResult(GoogleSignInResult googleSignInResult) {
+                        hideProgressDialog();
+                        handleSignInResult(googleSignInResult);
+                    }
+                });
+            } else{
+                Toast.makeText(this, "No Internet connection", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -110,6 +116,7 @@ public class SignInActivity extends AppCompatActivity implements
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
@@ -134,6 +141,8 @@ public class SignInActivity extends AppCompatActivity implements
             //  updateUI(true);
         } else {
             // Signed out, show unauthenticated UI.
+            Toast.makeText(this, "Failed to sign in", Toast.LENGTH_SHORT).show();
+            Log.d(TAG,"result::: " + result.toString());
             updateUI(false);
         }
     }
@@ -179,6 +188,7 @@ public class SignInActivity extends AppCompatActivity implements
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
         // be available.
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
+        Toast.makeText(this, "Connection failed", Toast.LENGTH_SHORT).show();
     }
 
     @Override

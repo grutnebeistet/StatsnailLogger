@@ -44,6 +44,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/edit_text_hint"
                 android:inputType="number"
+                android:maxLength="9"
                 android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
                 android:textColor="@android:color/white" />
 

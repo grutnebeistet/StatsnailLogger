@@ -9,15 +9,7 @@
     android:padding="@dimen/activity_margin"
     tools:context="com.roberts.adrian.statsnaillogger.activities.MainActivity">
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_post_data"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="@dimen/fab_margin"
-        android:scaleType="center"
-        android:src="@android:drawable/ic_menu_add" />
+
 
     <LinearLayout
         android:id="@+id/input_grading_weights_ll"
@@ -208,7 +200,9 @@
             </RelativeLayout>
         </LinearLayout>
 
-
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler_view_harvest_log"
             android:layout_width="match_parent"
@@ -216,7 +210,17 @@
             app:reverseLayout="true">
 
         </android.support.v7.widget.RecyclerView>
-
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_post_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="@dimen/fab_margin"
+        android:scaleType="center"
+        app:elevation="4dp"
+        android:src="@android:drawable/ic_menu_add" />
+</RelativeLayout>
     </LinearLayout>
 
 </RelativeLayout>

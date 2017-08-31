@@ -3,6 +3,7 @@ package com.roberts.adrian.statsnaillogger.adapters;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -52,7 +53,7 @@ public class HarvestLogAdapter extends RecyclerView.Adapter<HarvestLogAdapter.Lo
         if (gradedBy != null){
             graded = " Graded";
             holder.tvLogGradedBy.setText(gradedBy);
-            //holder.tvLogGradedBy.setTextColor(Color.GREEN);
+            holder.tvLogGradedBy.setTextColor(ContextCompat.getColor(mContext, R.color.dim_text));
         }else {
             graded = " NOT Graded";
             holder.tvLogGradedBy.setText(graded);

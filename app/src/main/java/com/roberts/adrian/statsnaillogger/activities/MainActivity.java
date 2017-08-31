@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -45,8 +44,6 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.roberts.adrian.statsnaillogger.R;
 import com.roberts.adrian.statsnaillogger.adapters.HarvestLogAdapter;
-import com.roberts.adrian.statsnaillogger.data.LogContract;
-import com.roberts.adrian.statsnaillogger.data.SqlDbHelper;
 import com.roberts.adrian.statsnaillogger.utils.Utilities;
 
 import java.io.IOException;
@@ -58,12 +55,12 @@ import java.util.Locale;
 
 import pub.devrel.easypermissions.EasyPermissions;
 
+import static com.roberts.adrian.statsnaillogger.R.id.fab_post_data;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_DATE;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_GRADED;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_ID;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_USER;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.CONTENT_URI_HARVEST_LOG;
-import static com.roberts.adrian.statsnaillogger.data.LogContract.TABLE_LOGS;
 
 public class MainActivity extends AppCompatActivity
         implements EasyPermissions.PermissionCallbacks,
@@ -174,15 +171,22 @@ public class MainActivity extends AppCompatActivity
 
         mFab = (FloatingActionButton)
 
-                findViewById(R.id.fab_post_data);
-        mFab.setEnabled(false);
+                findViewById(fab_post_data);
+      //  mFab.setEnabled(false);
         mFab.setOnClickListener(new View.OnClickListener()
 
         {
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "fab clicked");
-                if (mWeighingMode) {
+                if (!mCheckBox.isChecked()) {
+                    Toast.makeText(MainActivity.this, "Confirm checkbox", Toast.LENGTH_SHORT).show();
+                }
+                if(!Utilities.workingConnection(MainActivity.this)){
+                    Toast.makeText(MainActivity.this, "No Internet connection", Toast.LENGTH_SHORT).show();
+                }
+
+                else if (mWeighingMode) {
 
                     Thread postWeightsThread = new Thread(new Runnable() {
                         @Override
@@ -191,7 +195,7 @@ public class MainActivity extends AppCompatActivity
                         }
                     });
                     postWeightsThread.start();
-                } else {
+                } else if (mGradingMode) {
                     Thread postGradingsThread = new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -219,6 +223,7 @@ public class MainActivity extends AppCompatActivity
                     if (mWeighingMode) {
                         imm.hideSoftInputFromWindow(mUserInputCatch.getWindowToken(), 0);
                         mUserInputCatch.setEnabled(false);
+
 
                     }
                     if (mGradingMode) {
@@ -269,10 +274,41 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mLogAdapter.swapCursor(data);
+
         Log.i(TAG, "RV count: " + recyclerView.getLayoutManager().getItemCount());
         recyclerView.scrollToPosition(recyclerView.getLayoutManager().getItemCount() - 1);
+
+        if(mGradingMode){
+            ArrayList<Integer> ungradedHarvests = new ArrayList<>();
+            data.moveToFirst();
+            Log.i(TAG, "cursor count " + data.getCount());
+            // Looping backwards through harvestnumbers, adding every ungraded to the list
+            data.moveToLast();
+            while (!data.isBeforeFirst()) {
+                if(data.getString(INDEX_HARVEST_GRADED) == null) {
+                    Log.i(TAG, "cursor ints " + data.getInt(INDEX_HARVEST_ID));
+                    ungradedHarvests.add(data.getInt(INDEX_HARVEST_ID));
+                }
+                data.moveToPrevious();
+            }
+            // disable mFab and checkbox if there's no harvests left to be graded
+            Log.i(TAG, "ungraded: " + ungradedHarvests.size());
+            if (ungradedHarvests.size() == 0){
+                //mFab.setEnabled(false);
+                mCheckBox.setVisibility(View.INVISIBLE);
+                mCheckBox.setEnabled(false);
+            } else{
+                mCheckBox.setVisibility(View.VISIBLE);
+                mCheckBox.setEnabled(true);
+            }
+            ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, ungradedHarvests);
+            adapter.notifyDataSetChanged();
+
+            mSpinnerHarvestNo.setAdapter(adapter);
+        }
+        mLogAdapter.swapCursor(data);
     }
+
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
@@ -299,6 +335,7 @@ public class MainActivity extends AppCompatActivity
         layoutManager.setReverseLayout(true);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(mLogAdapter);
+        recyclerView.setOnTouchListener(this);
 
         mSpinnerHarvestNo = (Spinner) findViewById(R.id.spinner_harvest_no);
         mSpinnerHarvestNo.setFocusable(true);
@@ -308,36 +345,11 @@ public class MainActivity extends AppCompatActivity
         mEditTextJumbo = (EditText) findViewById(R.id.jumbo_et);
         mEditTextLarge = (EditText) findViewById(R.id.large_et);
 
-
-        // To get the ungraded harvest ID's in the spinner, latest harvest first
-        Cursor cursor;
-        SqlDbHelper dbHelper = new SqlDbHelper(this);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String[] column = {LogContract.COLUMN_HARVEST_ID};
-        String where = LogContract.COLUMN_HARVEST_GRADED + " is null or " + COLUMN_HARVEST_GRADED + " = ? ";
-        String sortOrder = COLUMN_HARVEST_ID + " DESC";
-        cursor = db.query(TABLE_LOGS, column, where, new String[]{""}, null, null, sortOrder);
-
-        ArrayList<Integer> ungradedHarvests = new ArrayList<>();
-        cursor.moveToFirst();
-        Log.i(TAG, "cursor count " + cursor.getCount());
-        while (!cursor.isAfterLast()) {
-            Log.i(TAG, "cursor ints " + cursor.getInt(0));
-            ungradedHarvests.add(cursor.getInt(0));
-            cursor.moveToNext();
-        }
-        cursor.close();
-        ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, ungradedHarvests);
-
-
-        mSpinnerHarvestNo.setAdapter(adapter);
         mSpinnerHarvestNo.setOnTouchListener(this);
         mEditTextSuperJumbo.setOnTouchListener(this);
         mEditTextJumbo.setOnTouchListener(this);
         mEditTextLarge.setOnTouchListener(this);
 
-
-        // TODO spinner
     }
 
     /**
@@ -358,19 +370,18 @@ public class MainActivity extends AppCompatActivity
 
             Log.i(TAG, "mService etter init i getResFromAp : " + (mService == null));
         } else if (!isDeviceOnline()) { // TODO toast i thread? kanskje ikke i thread nu
-            Toast.makeText(this, "NO INTERNET CONNECTION mvh Satan", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No Internet connection", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void postGradingData() {
         String spreadsheetId;
         String range;
-        spreadsheetId = "1zx1lZfMgQ3z_Ip-6QEnSK0W9YkrRoBI0xmYktvxDrvA"; // TODO if sheet doesn't exist
-
-        String name = mCredential.getSelectedAccountName();
-        Object spinnerHarvestNo = mSpinnerHarvestNo.getSelectedItem();
+        spreadsheetId = getString(R.string.spreadsheet_id);//"1zx1lZfMgQ3z_Ip-6QEnSK0W9YkrRoBI0xmYktvxDrvA"; // TODO if sheet doesn't exist
 
         int selectedHarvestNo = (Integer) mSpinnerHarvestNo.getSelectedItem();
+
+
 
         if (mExistingRows == null || mExistingRows.getValues() == null) {
             //TODO bare finish her? for å unngå overwriting
@@ -378,10 +389,17 @@ public class MainActivity extends AppCompatActivity
             finish();
             return;
         }
+
+
         List<Object> currentRow = mExistingRows.getValues().get(selectedHarvestNo);
         //TODO kun heltall???
         // Get the integer value of current row's registered weight, removing 'kg'
-        int registeredCatch = Integer.valueOf((currentRow.get(4).toString()).replaceAll("\\D+", ""));
+        int registeredCatch = 1;
+        try{
+            registeredCatch = Integer.valueOf((currentRow.get(4).toString()).replaceAll("\\D+", ""));
+        }catch (NumberFormatException ne){
+            ne.printStackTrace();
+        }
 
 
         String large = (mEditTextLarge.getText().toString().isEmpty()) ? "0" : mEditTextLarge.getText().toString();
@@ -417,10 +435,11 @@ public class MainActivity extends AppCompatActivity
         valueRange.setValues(values);
 
         String toastMessage;
-        if (mService == null) {
+        Log.i(TAG, "mService Null i grading: " + (mService == null));
+        if (mService == null || !Utilities.workingConnection(this)) {
 
-            Log.i(TAG, "mService Null, fnish");
-            toastMessage = "Failed to register catch!";
+            Log.i(TAG, "mService Null i grading, fnish");
+            toastMessage = "Failed to register catch! Check connection";
             toastFromThread(toastMessage);
             finish();
             return;
@@ -472,6 +491,8 @@ public class MainActivity extends AppCompatActivity
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
+
+
         String snailCatch = (mUserInputCatch.getText().toString().isEmpty()) ? "0" : mUserInputCatch.getText().toString();
         String harvestNumber = String.valueOf(harvestNum);
         catchData.add(harvestNumber);
@@ -490,11 +511,11 @@ public class MainActivity extends AppCompatActivity
         valueRange.setValues(values);
 
         String toastMessage;
-        Log.i(TAG, "mService Null? " + (mService == null));
-        if (mService == null) {
+        Log.i(TAG, "mService Null i WEIGING? " + (mService == null));
+        if (mService == null || !Utilities.workingConnection(this)) {
 
             Log.i(TAG, "mService Null, fnish");
-            toastMessage = "Failed to register catch!";
+            toastMessage = "Failed to register catch! Check connection";
             toastFromThread(toastMessage);
             finish();
             return;
@@ -514,7 +535,7 @@ public class MainActivity extends AppCompatActivity
         }
         //  Utilities.updateDb(this, mExistingRows);
         showSummaryDialog(); // TODO?
-        // updating the db immediately in order for the log to get updated (clumsy)
+        // updating the db immediately in order for the log to get updated (clumsy?)
         mExistingRows.getValues().add(harvestNum, values.get(0));
         Utilities.updateDb(this, mExistingRows);
         // Utilities.updateDbSingle(this,valueRange, mExistingRows.getValues().size());
@@ -556,10 +577,6 @@ public class MainActivity extends AppCompatActivity
         //TODO
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
 
 
     /**
@@ -728,6 +745,9 @@ public class MainActivity extends AppCompatActivity
             imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
 
             //  imm.hideSoftInputFromWindow(v.getWindowToken(), 0); // TODO forenkling ang edittexts?
+        }
+        if(v instanceof RecyclerView){
+
         }
         return false;
     }

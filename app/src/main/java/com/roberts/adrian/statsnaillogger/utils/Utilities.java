@@ -7,18 +7,17 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.roberts.adrian.statsnaillogger.R;
-import com.roberts.adrian.statsnaillogger.activities.MainActivity;
 import com.roberts.adrian.statsnaillogger.data.LogContract;
 import com.roberts.adrian.statsnaillogger.data.SqlDbHelper;
 
@@ -27,13 +26,11 @@ import java.util.List;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 
-import static android.provider.CalendarContract.CalendarCache.URI;
 import static com.roberts.adrian.statsnaillogger.activities.MainActivity.REQUEST_AUTHORIZATION;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_DATE;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_GRADED;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_ID;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_USER;
-import static com.roberts.adrian.statsnaillogger.data.LogContract.CONTENT_LOG_ITEM_TYPE;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.CONTENT_URI_HARVEST_LOG;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.TABLE_LOGS;
 
@@ -151,6 +148,7 @@ public class Utilities {
                 values.put(COLUMN_HARVEST_ID, Integer.valueOf(harvestNo));
                 values.put(COLUMN_HARVEST_DATE, date);
                 values.put(COLUMN_HARVEST_USER, name);
+                // a row with size > 6 means it has been graded - retrieve graders name
                 if (lb.size() > 6) {
                     // Log.i(TAG, "Been graded " + harvestNo);
                     values.put(COLUMN_HARVEST_GRADED, name_grader);
@@ -163,5 +161,18 @@ public class Utilities {
                 //   Log.i(TAG, "lb: " + lb + " lb.size: " +lb.size() + "\nHarvNo " + harvestNo + " dato: " + date + " name: " + name);
             }
         }
+    }
+    /**
+     * Checks internet connection status
+     *
+     * @param context
+     * @return true if the user has a internet connection, false otherwise
+     */
+    public static boolean workingConnection(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        return (networkInfo != null && networkInfo.isConnectedOrConnecting());
     }
 }

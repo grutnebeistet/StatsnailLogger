@@ -37,6 +37,7 @@
         <item name="android:hint">@string/edit_text_hint</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:inputType">numberDecimal</item>
+        <item name="android:maxLength">9</item>
 
 
 
