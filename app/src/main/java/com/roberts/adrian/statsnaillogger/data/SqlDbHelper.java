@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_DATE;
-import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_GRADED;
+import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_GRADED_BY;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_ID;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_USER;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.TABLE_LOGS;
@@ -29,7 +29,7 @@ public class SqlDbHelper extends SQLiteOpenHelper {
                         COLUMN_HARVEST_ID + " INTEGER PRIMARY KEY, " +
                         COLUMN_HARVEST_DATE + " STRING NOT NULL, " +
                         COLUMN_HARVEST_USER + " STRING NOT NULL, " +
-                        COLUMN_HARVEST_GRADED + " TEXT" +
+                        COLUMN_HARVEST_GRADED_BY + " TEXT" +
                         ");";
         db.execSQL(SQL_CREATE_TABLE);
 

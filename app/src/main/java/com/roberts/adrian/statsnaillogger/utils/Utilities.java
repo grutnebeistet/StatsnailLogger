@@ -28,7 +28,7 @@ import pub.devrel.easypermissions.AfterPermissionGranted;
 
 import static com.roberts.adrian.statsnaillogger.activities.MainActivity.REQUEST_AUTHORIZATION;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_DATE;
-import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_GRADED;
+import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_GRADED_BY;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_ID;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_USER;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.CONTENT_URI_HARVEST_LOG;
@@ -107,7 +107,7 @@ public class Utilities {
         ContentValues values = new ContentValues();
 
         String name_grader = newValue.getValues().get(0).get(4).toString();
-        values.put(COLUMN_HARVEST_GRADED, name_grader);
+        values.put(COLUMN_HARVEST_GRADED_BY, name_grader);
 
         Uri logUri = ContentUris.withAppendedId(CONTENT_URI_HARVEST_LOG,rowNum);
         Log.i(TAG, "values: " + name_grader);
@@ -151,9 +151,9 @@ public class Utilities {
                 // a row with size > 6 means it has been graded - retrieve graders name
                 if (lb.size() > 6) {
                     // Log.i(TAG, "Been graded " + harvestNo);
-                    values.put(COLUMN_HARVEST_GRADED, name_grader);
+                    values.put(COLUMN_HARVEST_GRADED_BY, name_grader);
                 } else {
-                    // values.put(COLUMN_HARVEST_GRADED, null);
+                    // values.put(COLUMN_HARVEST_GRADED_BY, null);
                     // Log.i(TAG, "Not graded " + harvestNo);
                 } // TODO bulkinsert
 

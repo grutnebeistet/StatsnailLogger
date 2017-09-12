@@ -10,7 +10,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_logo2"
+        android:icon="@drawable/ic_logo"
         android:label="Statsnail Catch Log"
         android:theme="@style/AppTheme">
         <provider

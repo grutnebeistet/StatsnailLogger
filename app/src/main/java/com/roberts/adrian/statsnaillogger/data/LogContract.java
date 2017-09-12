@@ -33,7 +33,7 @@ public class LogContract implements BaseColumns {
     public static final String COLUMN_HARVEST_ID = "harvest_id";
     public static final String COLUMN_HARVEST_USER = "harvest_user";
     public static final String COLUMN_HARVEST_DATE = "harvest_date";
-    public static final String COLUMN_HARVEST_GRADED = "harvest_graded";
+    public static final String COLUMN_HARVEST_GRADED_BY = "harvest_graded_by";
 
     public static final int BEEN_GRADED = 1;
     public static final int NOT_GRADED = 0;

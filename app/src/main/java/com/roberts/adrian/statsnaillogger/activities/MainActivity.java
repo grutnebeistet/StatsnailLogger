@@ -57,7 +57,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.roberts.adrian.statsnaillogger.R.id.fab_post_data;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_DATE;
-import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_GRADED;
+import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_GRADED_BY;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_ID;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.COLUMN_HARVEST_USER;
 import static com.roberts.adrian.statsnaillogger.data.LogContract.CONTENT_URI_HARVEST_LOG;
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity
             COLUMN_HARVEST_ID,
             COLUMN_HARVEST_DATE,
             COLUMN_HARVEST_USER,
-            COLUMN_HARVEST_GRADED
+            COLUMN_HARVEST_GRADED_BY
     };
     public static final int INDEX_HARVEST_ID = 0;
     public static final int INDEX_HARVEST_DATE = 1;
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity
         mFab = (FloatingActionButton)
 
                 findViewById(fab_post_data);
-      //  mFab.setEnabled(false);
+        mFab.setEnabled(false);
         mFab.setOnClickListener(new View.OnClickListener()
 
         {
@@ -223,6 +223,7 @@ public class MainActivity extends AppCompatActivity
                     if (mWeighingMode) {
                         imm.hideSoftInputFromWindow(mUserInputCatch.getWindowToken(), 0);
                         mUserInputCatch.setEnabled(false);
+                        //new Dialog(MainActivity.this).findViewById( //TODO
 
 
                     }
@@ -369,7 +370,7 @@ public class MainActivity extends AppCompatActivity
             Log.i(TAG, "name i getResultFrom: " + mCredential.getSelectedAccountName());
 
             Log.i(TAG, "mService etter init i getResFromAp : " + (mService == null));
-        } else if (!isDeviceOnline()) { // TODO toast i thread? kanskje ikke i thread nu
+        } else if (!isDeviceOnline()) {
             Toast.makeText(this, "No Internet connection", Toast.LENGTH_SHORT).show();
         }
     }
@@ -392,7 +393,7 @@ public class MainActivity extends AppCompatActivity
 
 
         List<Object> currentRow = mExistingRows.getValues().get(selectedHarvestNo);
-        //TODO kun heltall???
+
         // Get the integer value of current row's registered weight, removing 'kg'
         int registeredCatch = 1;
         try{
