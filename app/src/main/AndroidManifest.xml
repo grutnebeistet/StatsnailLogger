@@ -21,10 +21,14 @@
             android:name=".activities.MainActivity"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan"
             android:noHistory="true"
-            android:label="Statsnail Catch Log" />
+            android:label="Statsnail Catch Log"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".activities.SignInActivity"
-            android:label="Statsnail Login">
+            android:label="Statsnail Login"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -35,7 +39,9 @@
         <activity
             android:name=".activities.ChooserActivity"
             android:label="@string/title_activity_chooser"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
