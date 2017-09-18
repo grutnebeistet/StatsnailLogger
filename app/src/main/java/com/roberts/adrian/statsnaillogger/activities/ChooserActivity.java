@@ -123,7 +123,7 @@ public class ChooserActivity extends AppCompatActivity
         if (!EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
 
             EasyPermissions.requestPermissions(this,
-                    "turn on location forr faen",
+                    "Location helps us keep track of where we find snails.",
                     REQUEST_PERMISSION_ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION);
 

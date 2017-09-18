@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity
     private static final int HARVEST_LOG_LOADER_ID = 1349;
 
     /**
-     * Create the main activity.
+     * This activity runs either in Weighing or Grading mode
      *
      * @param savedInstanceState previously saved instance data.
      */
@@ -151,11 +151,11 @@ public class MainActivity extends AppCompatActivity
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
         mService = new com.google.api.services.sheets.v4.Sheets.Builder(
                 transport, jsonFactory, mCredential)
-                .setApplicationName("Statsnail Catch Logger") // TODO R.string.
+                .setApplicationName("Statsnail Catch Logger")
                 .build();
 
 
-        //getContactPermission();
+
         getResultsFromApi();
         Thread readSheet = new Thread(new Runnable() {
             @Override
@@ -164,9 +164,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
         readSheet.start();
-
-
-        Log.i(TAG, "name: " + mCredential.getSelectedAccountName());
 
 
         mFab = (FloatingActionButton)
@@ -365,27 +362,19 @@ public class MainActivity extends AppCompatActivity
         if (!isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
         } else if (mCredential.getSelectedAccountName() == null) {
-            Log.i(TAG, "name i getResultFrom: " + mCredential.getSelectedAccountName());
             mCredential.setSelectedAccountName(mGoogleAccount.getAccount().name);
-            Log.i(TAG, "name i getResultFrom: " + mCredential.getSelectedAccountName());
-
-            Log.i(TAG, "mService etter init i getResFromAp : " + (mService == null));
         } else if (!isDeviceOnline()) {
             Toast.makeText(this, "No Internet connection", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void postGradingData() {
-        String spreadsheetId;
         String range;
-        spreadsheetId = getString(R.string.spreadsheet_id);//"1zx1lZfMgQ3z_Ip-6QEnSK0W9YkrRoBI0xmYktvxDrvA"; // TODO if sheet doesn't exist
+        String spreadsheetId = getString(R.string.spreadsheet_id); // TODO if sheet doesn't exist
 
         int selectedHarvestNo = (Integer) mSpinnerHarvestNo.getSelectedItem();
 
-
-
         if (mExistingRows == null || mExistingRows.getValues() == null) {
-            //TODO bare finish her? for å unngå overwriting
             toastFromThread("Failed to read the online spreadsheet");
             finish();
             return;
@@ -402,12 +391,11 @@ public class MainActivity extends AppCompatActivity
             ne.printStackTrace();
         }
 
-
         String large = (mEditTextLarge.getText().toString().isEmpty()) ? "0" : mEditTextLarge.getText().toString();
         String jumbo = (mEditTextJumbo.getText().toString().isEmpty()) ? "0" : mEditTextJumbo.getText().toString();
         String superJumbo = (mEditTextSuperJumbo.getText().toString().isEmpty()) ? "0" : mEditTextSuperJumbo.getText().toString();
 
-        int loss = registeredCatch - (Integer.valueOf(large) + Integer.valueOf(jumbo) + Integer.valueOf(superJumbo)); //TODO funke?
+        int loss = registeredCatch - (Integer.valueOf(large) + Integer.valueOf(jumbo) + Integer.valueOf(superJumbo));
 
         String currentHarvestNo = String.valueOf(selectedHarvestNo + 1); // +1 cos row 1 == labels
         range = "sheet4!G" + currentHarvestNo + ":L" + currentHarvestNo; //TODO R.string
@@ -416,7 +404,6 @@ public class MainActivity extends AppCompatActivity
 
         List<Object> gradingData = new ArrayList<>();
 
-        // TODO update DB
 
         gradingData.add(getDate());
         //gradingData.add(getTime());
@@ -436,10 +423,8 @@ public class MainActivity extends AppCompatActivity
         valueRange.setValues(values);
 
         String toastMessage;
-        Log.i(TAG, "mService Null i grading: " + (mService == null));
-        if (mService == null || !Utilities.workingConnection(this)) {
 
-            Log.i(TAG, "mService Null i grading, fnish");
+        if (mService == null || !Utilities.workingConnection(this)) {
             toastMessage = "Failed to register catch! Check connection";
             toastFromThread(toastMessage);
             finish();
@@ -453,24 +438,20 @@ public class MainActivity extends AppCompatActivity
         } catch (NullPointerException | IOException e) {
             Log.i(TAG, e.getMessage());
         }
-//        getSupportLoaderManager().restartLoader(0,null,this);
+
         showSummaryDialog();
         Log.i(TAG, "new value 0: " + values.get(0) + "\n" + mExistingRows.getValues().get(selectedHarvestNo));
         mExistingRows.getValues().add(selectedHarvestNo, values.get(0));
         Log.i(TAG, "new value 0: " + values.get(0) + "\n" + mExistingRows.getValues().get(selectedHarvestNo));
         Utilities.updateDbSingle(this, valueRange, selectedHarvestNo);
-       /* mExistingRows.getValues().add(selectedHarvestNo,values.get(0));
-        Utilities.updateDb(this,mExistingRows);*/
-        //Utilities.updateDb(this, mExistingRows.setValues(values));  // TODO only update the db with new values instead
         toastMessage = "Harvest number " + selectedHarvestNo + " graded";
         toastFromThread(toastMessage);
         finish();
     }
 
     public void postWeighingData() {
-        String spreadsheetId;
         String range;
-        spreadsheetId = "1zx1lZfMgQ3z_Ip-6QEnSK0W9YkrRoBI0xmYktvxDrvA";
+        String spreadsheetId = getString(R.string.spreadsheet_id);
         range = "sheet4!A1:F1";
 
         int harvestNum;
@@ -534,13 +515,12 @@ public class MainActivity extends AppCompatActivity
             return;
 
         }
-        //  Utilities.updateDb(this, mExistingRows);
+
         showSummaryDialog(); // TODO?
         // updating the db immediately in order for the log to get updated (clumsy?)
         mExistingRows.getValues().add(harvestNum, values.get(0));
         Utilities.updateDb(this, mExistingRows);
         // Utilities.updateDbSingle(this,valueRange, mExistingRows.getValues().size());
-        // TODO lese spreadsheet igjen for å sjekke at faktisk oppdatert??
         toastMessage = "Harvest number " + harvestNum + " added";
         toastFromThread(toastMessage);
         finish();
